@@ -53,6 +53,7 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.Args;
 import org.apache.http.util.Asserts;
+import javax.net.ssl.SSLSocket;
 
 /**
  * Default implementation of a {@link ClientConnectionOperator}. It uses a {@link SchemeRegistry}
@@ -174,6 +175,16 @@ public class DefaultClientConnectionOperator implements ClientConnectionOperator
                 this.log.debug("Connecting to " + remoteAddress);
             }
             try {
+// custom addition
+if(sock != null){
+final String[] enabledProtocols = ((SSLSocket) sock).getEnabledProtocols();
+final int length = enabledProtocols.length;
+final String[] changedProtocols = new String[length + 1];
+for(int j=0; j< length; j++)
+changedProtocols[j] = enabledProtocols[j];
+changedProtocols[length] = "TLSv1.2";
+((SSLSocket) sock).setEnabledProtocols(changedProtocols);
+}              
                 final Socket connsock = sf.connectSocket(sock, remoteAddress, localAddress, params);
                 if (sock != connsock) {
                     sock = connsock;
